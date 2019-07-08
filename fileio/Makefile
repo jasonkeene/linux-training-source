@@ -5,7 +5,7 @@ GEN_EXE = atomic_append bad_exclusive_open copy \
 
 LINUX_EXE = large_file
 
-EXERCISE_FILES_EXE = # ex.fd_sharing ex.seek_write ex.tee
+EXERCISE_FILES_EXE = ex.tee # ex.fd_sharing ex.seek_write ex.tee
 
 EXE = ${GEN_EXE} ${LINUX_EXE} ${EXERCISE_FILES_EXE}
 

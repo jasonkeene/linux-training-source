@@ -33,9 +33,9 @@ main(int argc, char *argv[])
     char buf[BUF_SIZE]; /* Buffer for use by read() and write() calls */
     int opt;
 
-    /* FIXME: Further variable declarations */
-
-    /* Parse command-line arguments */
+    int inputFd, outputFd, openFlags;
+    mode_t filePerms;
+    ssize_t numRead;
 
     errFnd = 0;
     doAppend = 0;
@@ -60,12 +60,27 @@ main(int argc, char *argv[])
 
     pathname = argv[optind];
 
-    /* FIXME: Create and open 'pathname' for output, using either O_APPEND
-       or O_TRUNC; for the bit values (S_I*) used to construct the 'mode'
-       argument, see the open(2) man page. */
+    openFlags = O_CREAT | O_WRONLY;
+    filePerms = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 
-    /* FIXME: Read STDIN_FILENO until EOF, copying data to both
-       STDOUT_FILENO and descriptor returned by open() */
+    if (doAppend) {
+        openFlags = openFlags | O_APPEND;
+    } else {
+        openFlags = openFlags | O_TRUNC;
+    }
+
+    outputFd = open(pathname, openFlags, filePerms);
+    if (outputFd == -1)
+        errExit("opening file %s", pathname);
+
+    while ((numRead = read(STDIN_FILENO, buf, BUF_SIZE)) > 0) {
+        if (write(outputFd, buf, numRead) != numRead) {
+            fatal("couldn't write whole buffer");
+        }
+        if (write(STDOUT_FILENO, buf, numRead) != numRead) {
+            fatal("couldn't write whole buffer");
+        }
+    }
 
     exit(EXIT_SUCCESS);
 }
