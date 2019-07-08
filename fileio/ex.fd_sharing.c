@@ -23,29 +23,51 @@
      status flag via the first file descriptor.
 */
 #include <fcntl.h>
+#include <stdio.h>
 #include "tlpi_hdr.h"
 
 static void
 printFileDescriptionInfo(int fd)
 {
+    int flags;
+    off_t offset;
 
-    /* FIXME: Display file offset and O_APPEND setting for 'fd' */
+    flags = fcntl(fd, F_GETFL);
+    if (flags == -1) errExit("unable to read flags");
 
+    offset = lseek(fd, 0, SEEK_CUR);
+    if (offset == -1) errExit("unable to read offset");
+
+    printf("offset: %ld O_APPEND: %d\n", offset, flags & O_APPEND);
 }
 
 int
 main(int argc, char *argv[])
 {
     int fd1, fd2, flags;
+    off_t offset;
 
     if (argc < 2 || strcmp(argv[1], "--help") == 0)
         usageErr("%s pathname\n", argv[0]);
 
     fd1 = open(argv[1], O_RDWR);
-    if (fd1 == -1)
-        errExit("opening file %s", argv[1]);
+    if (fd1 == -1) errExit("opening file %s", argv[1]);
+    printFileDescriptionInfo(fd1);
 
-    /* FIXME: Complete as described in comments above */
+    fd2 = dup(fd1);
+    printFileDescriptionInfo(fd2);
+
+    offset = lseek(fd1, 100000000, SEEK_SET);
+    if (offset == -1) errExit("unable to read offset");
+    printFileDescriptionInfo(fd1);
+    printFileDescriptionInfo(fd2);
+
+    flags = fcntl(fd1, F_GETFL);
+    if (flags == -1) errExit("unable to read flags");
+    flags = fcntl(fd1, F_SETFL, flags | O_APPEND);
+    if (flags == -1) errExit("unable to write flags");
+    printFileDescriptionInfo(fd1);
+    printFileDescriptionInfo(fd2);
 
     exit(EXIT_SUCCESS);
 }

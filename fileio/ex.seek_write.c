@@ -18,23 +18,41 @@
 #include <fcntl.h>
 #include "tlpi_hdr.h"
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    char *pathname;
-    off_t offset;
-    char *string;
-
-    /* FIXME: Further variable declarations */
+    char *pathname, *string;
+    off_t offset, newOffset;
+    size_t stringLen;
+    ssize_t wrote;
+    int fileFd;
 
     if (argc != 4 || strcmp(argv[1], "--help") == 0)
         usageErr("%s pathname offset string\n", argv[0]);
 
     pathname = argv[1];
+    // TODO: check errno for strtoll
     offset = strtoll(argv[2], NULL, 0);
     string = argv[3];
 
-    /* FIXME: Open 'pathname', seek to 'offset', and write 'string' */
+    fileFd = open(
+        pathname,
+        O_CREAT | O_WRONLY,
+        S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
+    );
+    if (fileFd == -1) errExit("opening file %s", pathname);
+
+    newOffset = lseek(fileFd, offset, SEEK_SET);
+    if (newOffset == -1) errExit("seeking in file %s", pathname);
+    if (newOffset != offset) {
+        fatal("offset != newOffset");
+    }
+
+    stringLen = strlen(string);
+    wrote = write(fileFd, string, stringLen);
+    if (wrote == -1) errExit("writing to file %s", pathname);
+    if (wrote != stringLen) {
+        fatal("wrote != stringLen");
+    }
 
     exit(EXIT_SUCCESS);
 }
