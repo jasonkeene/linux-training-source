@@ -9,7 +9,7 @@ LINUX_EXE = signalfd_sigval
 
 COURSE_FILES_EXE = ouch_sigaction siginfo_handler t_strsignal unsafe_malloc unsafe_printf
 
-EXERCISE_FILES_EXE = # ex.pending_sig_expt
+EXERCISE_FILES_EXE = ex.pending_sig_expt
 
 EXE = ${GEN_EXE} ${LINUX_EXE} ${COURSE_FILES_EXE} ${EXERCISE_FILES_EXE}
 

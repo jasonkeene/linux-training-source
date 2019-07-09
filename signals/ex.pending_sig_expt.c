@@ -43,24 +43,50 @@
 /* FIXME: Implement handlers for SIGINT and SIGQUIT; the latter handler
    should display a message that SIGQUIT has been caught */
 
-int
-main(int argc, char *argv[])
+static void handle_sigint(int s)
 {
+    printf("handle_sigint\n");
+}
 
-    /* FIXME: Add variable declarations as required */
+static void handle_sigquit(int s)
+{
+    printf("handle_sigquit\n");
+}
 
-    /* FIXME: Block all signals except SIGINT */
+int main(int argc, char *argv[])
+{
+    sigset_t blocking;
+    sigfillset(&blocking);
+    sigdelset(&blocking, SIGINT);
+    sigprocmask(SIG_BLOCK, &blocking, NULL);
 
-    /* FIXME: Set up handlers for SIGINT and SIGQUIT */
+    struct sigaction sa1;
+    sa1.sa_flags = 0;
+    sa1.sa_handler = handle_sigint;
+    sigemptyset(&sa1.sa_mask);
+    sigaction(SIGINT, &sa1, NULL);
 
-    /* Block until SIGINT handler is invoked */
+    struct sigaction sa2;
+    sa2.sa_flags = 0;
+    sa2.sa_handler = handle_sigquit;
+    sigemptyset(&sa2.sa_mask);
+    sigaction(SIGQUIT, &sa2, NULL);
 
     printf("Pausing... send me some signals (PID=%ld)\n", (long) getpid());
     pause();
 
-    /* FIXME: Retrieve and display set of pending signals */
+    sigset_t pending;
+    sigpending(&pending);
+    int member;
+    for (int sig = 1; sig < NSIG; sig++) {
+        member = sigismember(&pending, sig);
+        if (member == 1) {
+            printf("%2d: %s\n", sig, strsignal(sig));
+        }
+    }
 
-    /* FIXME: Unblock SIGQUIT */
+    sigdelset(&blocking, SIGQUIT);
+    sigprocmask(SIG_SETMASK, &blocking, NULL);
 
     pause();
 
